@@ -15,8 +15,8 @@ from tests.odm.models import DocumentTestModel
 #     new_doc = DocumentTestModel(
 #         test_int=0, test_str="REPLACED_VALUE", test_list=[]
 #     )
-#     await DocumentTestModel.replace_one({"_id": document.id}, new_doc)
-#     new_document = await DocumentTestModel.get(document.id)
+#     await DocumentTestModel.replace_one({"_id": document.object_id}, new_doc)
+#     new_document = await DocumentTestModel.get(document.object_id)
 #     assert new_document.test_str == "REPLACED_VALUE"
 
 
@@ -56,7 +56,7 @@ async def test_replace(document):
     new_doc = document.copy(update=update_data)
     # document.test_str = "REPLACED_VALUE"
     await new_doc.replace()
-    new_document = await DocumentTestModel.get(document.id)
+    new_document = await DocumentTestModel.get(document.object_id)
     assert new_document.test_str == "REPLACED_VALUE"
 
 
@@ -77,7 +77,7 @@ async def test_save(document):
     new_doc = document.copy(update=update_data)
     # document.test_str = "REPLACED_VALUE"
     await new_doc.save()
-    new_document = await DocumentTestModel.get(document.id)
+    new_document = await DocumentTestModel.get(document.object_id)
     assert new_document.test_str == "REPLACED_VALUE"
 
 
@@ -107,9 +107,9 @@ async def test_save_not_found(document_not_inserted):
 
 async def test_update_one(document):
     await DocumentTestModel.find_one(
-        {"_id": document.id, "test_list.test_str": "foo"}
+        {"_id": document.object_id, "test_list.test_str": "foo"}
     ).update({"$set": {"test_list.$.test_str": "foo_foo"}})
-    new_document = await DocumentTestModel.get(document.id)
+    new_document = await DocumentTestModel.get(document.object_id)
     assert new_document.test_list[0].test_str == "foo_foo"
 
 
@@ -159,7 +159,7 @@ async def test_update_all(documents):
 #         update_query={"$push": {"test_list": to_insert.dict()}},
 #         session=session,
 #     )
-#     new_document = await DocumentTestModel.get(document.id, session=session)
+#     new_document = await DocumentTestModel.get(document.object_id, session=session)
 #     assert len(new_document.test_list) == buf_len + 1
 #
 #
@@ -168,9 +168,9 @@ async def test_update_all(documents):
 #         test_int=0, test_str="REPLACED_VALUE", test_list=[]
 #     )
 #     await DocumentTestModel.replace_one(
-#         {"_id": document.id}, new_doc, session=session
+#         {"_id": document.object_id}, new_doc, session=session
 #     )
-#     new_document = await DocumentTestModel.get(document.id, session=session)
+#     new_document = await DocumentTestModel.get(document.object_id, session=session)
 #     assert new_document.test_str == "REPLACED_VALUE"
 #
 #
@@ -179,17 +179,17 @@ async def test_update_all(documents):
 #     new_doc: DocumentTestModel = document.copy(update=update_data)
 #     # document.test_str = "REPLACED_VALUE"
 #     await new_doc.replace(session=session)
-#     new_document = await DocumentTestModel.get(document.id, session=session)
+#     new_document = await DocumentTestModel.get(document.object_id, session=session)
 #     assert new_document.test_str == "REPLACED_VALUE"
 #
 #
 # async def test_update_one_with_session(document, session):
 #     await DocumentTestModel.update_one(
 #         update_query={"$set": {"test_list.$.test_str": "foo_foo"}},
-#         filter_query={"_id": document.id, "test_list.test_str": "foo"},
+#         filter_query={"_id": document.object_id, "test_list.test_str": "foo"},
 #         session=session,
 #     )
-#     new_document = await DocumentTestModel.get(document.id, session=session)
+#     new_document = await DocumentTestModel.get(document.object_id, session=session)
 #     assert new_document.test_list[0].test_str == "foo_foo"
 #
 #

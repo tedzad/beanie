@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 def get_dict(document: "Document", to_db: bool = False):
     exclude = set()
-    if document.id is None:
+    if document.object_id is None:
         exclude.add("_id")
     if not document.get_settings().model_settings.use_revision:
         exclude.add("revision_id")

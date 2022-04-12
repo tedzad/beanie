@@ -5,7 +5,7 @@ from tests.odm.models import DocumentTestModel
 
 
 async def test_get(document):
-    new_document = await DocumentTestModel.get(document.id)
+    new_document = await DocumentTestModel.get(document.object_id)
     assert new_document == document
 
 
@@ -19,7 +19,7 @@ async def test_find_one(documents):
     await documents(10, "smthe else")
     expected_doc_id = PydanticObjectId(inserted_one[0])
     new_document = await DocumentTestModel.find_one({"test_str": "kipasa"})
-    assert new_document.id == expected_doc_id
+    assert new_document.object_id == expected_doc_id
 
 
 async def test_find_one_not_found(documents):
@@ -153,7 +153,7 @@ async def test_find_many_not_found(documents):
 
 
 async def test_get_with_session(document, session):
-    new_document = await DocumentTestModel.get(document.id, session=session)
+    new_document = await DocumentTestModel.get(document.object_id, session=session)
     assert new_document == document
 
 
@@ -166,7 +166,7 @@ async def test_find_one_with_session(documents, session):
     new_document = await DocumentTestModel.find_one(
         {"test_str": "kipasa"}, session=session
     )
-    assert new_document.id == expected_doc_id
+    assert new_document.object_id == expected_doc_id
 
 
 async def test_find_all_with_session(documents, session):

@@ -94,7 +94,7 @@ class Document(BaseModel, UpdateMethods):
 
     Fields:
 
-    - `id` - MongoDB document ObjectID "_id" field.
+    - `object_id` - MongoDB document ObjectID "_id" field.
     Mapped to the PydanticObjectId class
 
     Inherited from:
@@ -103,7 +103,7 @@ class Document(BaseModel, UpdateMethods):
     - [UpdateMethods](https://roman-right.github.io/beanie/api/interfaces/#aggregatemethods)
     """
 
-    id: Optional[PydanticObjectId] = None
+    object_id: Optional[PydanticObjectId] = None
 
     # State
     revision_id: Optional[UUID] = Field(default=None, hidden=True)
@@ -140,9 +140,9 @@ class Document(BaseModel, UpdateMethods):
         Update local document from the database
         :return: None
         """
-        if self.id is None:
-            raise ValueError("Document has no id")
-        new_instance: Optional[Document] = await self.get(self.id)
+        if self.object_id is None:
+            raise ValueError("Document has no object_id")
+        new_instance: Optional[Document] = await self.get(self.object_id)
         if new_instance is None:
             raise DocumentNotFound(
                 "Can not sync. The document is not in the database anymore."
@@ -186,10 +186,10 @@ class Document(BaseModel, UpdateMethods):
         result = await self.get_motor_collection().insert_one(
             get_dict(self, to_db=True), session=session
         )
-        new_id = result.inserted_id
-        if not isinstance(new_id, self.__fields__["id"].type_):
-            new_id = self.__fields__["id"].type_(new_id)
-        self.id = new_id
+        new_object_id = result.inserted_id
+        if not isinstance(new_object_id, self.__fields__["object_id"].type_):
+            new_object_id = self.__fields__["object_id"].type_(new_object_id)
+        self.object_id = new_object_id
         return self
 
     async def create(
@@ -276,16 +276,16 @@ class Document(BaseModel, UpdateMethods):
         **pymongo_kwargs,
     ) -> Optional[DocType]:
         """
-        Get document by id, returns None if document does not exist
+        Get document by object_id, returns None if document does not exist
 
-        :param document_id: PydanticObjectId - document id
+        :param document_id: PydanticObjectId - document object_id
         :param session: Optional[ClientSession] - pymongo session
         :param ignore_cache: bool - ignore cache (if it is turned on)
         :param **pymongo_kwargs: pymongo native parameters for find operation
         :return: Union["Document", None]
         """
-        if not isinstance(document_id, cls.__fields__["id"].type_):
-            document_id = parse_obj_as(cls.__fields__["id"].type_, document_id)
+        if not isinstance(document_id, cls.__fields__["object_id"].type_):
+            document_id = parse_obj_as(cls.__fields__["object_id"].type_, document_id)
         return await cls.find_one(
             {"_id": document_id},
             session=session,
@@ -616,8 +616,8 @@ class Document(BaseModel, UpdateMethods):
         :param bulk_writer: "BulkWriter" - Beanie bulk writer
         :return: self
         """
-        if self.id is None:
-            raise ValueError("Document must have an id")
+        if self.object_id is None:
+            raise ValueError("Document must have an object_id")
 
         if bulk_writer is not None and link_rule != WriteRules.DO_NOTHING:
             raise NotSupported
@@ -649,7 +649,7 @@ class Document(BaseModel, UpdateMethods):
                                 )
 
         use_revision_id = self.get_settings().model_settings.use_revision
-        find_query: Dict[str, Any] = {"_id": self.id}
+        find_query: Dict[str, Any] = {"_id": self.object_id}
 
         if use_revision_id and not ignore_revision:
             find_query["revision_id"] = self._previous_revision_id
@@ -744,12 +744,12 @@ class Document(BaseModel, UpdateMethods):
         :param session: Optional[ClientSession] - pymongo session.
         :return: None
         """
-        ids_list = [document.id for document in documents]
-        if await cls.find(In(cls.id, ids_list)).count() != len(ids_list):
+        ids_list = [document.object_id for document in documents]
+        if await cls.find(In(cls.object_id, ids_list)).count() != len(ids_list):
             raise ReplaceError(
                 "Some of the documents are not exist in the collection"
             )
-        await cls.find(In(cls.id, ids_list), session=session).delete()
+        await cls.find(In(cls.object_id, ids_list), session=session).delete()
         await cls.insert_many(documents, session=session)
 
     @save_state_after
@@ -773,7 +773,7 @@ class Document(BaseModel, UpdateMethods):
         """
         use_revision_id = self.get_settings().model_settings.use_revision
 
-        find_query: Dict[str, Any] = {"_id": self.id}
+        find_query: Dict[str, Any] = {"_id": self.object_id}
 
         if use_revision_id and not ignore_revision:
             find_query["revision_id"] = self._previous_revision_id
@@ -852,7 +852,7 @@ class Document(BaseModel, UpdateMethods):
                                     **pymongo_kwargs,
                                 )
 
-        return await self.find_one({"_id": self.id}).delete(
+        return await self.find_one({"_id": self.object_id}).delete(
             session=session, bulk_writer=bulk_writer, **pymongo_kwargs
         )
 
@@ -1042,7 +1042,7 @@ class Document(BaseModel, UpdateMethods):
         if self.is_changed:
             for key, value in self._saved_state.items():  # type: ignore
                 if key == "_id":
-                    setattr(self, "id", value)
+                    setattr(self, "object_id", value)
                 else:
                     setattr(self, key, value)
 
@@ -1228,9 +1228,9 @@ class Document(BaseModel, UpdateMethods):
             self.parse_obj(self)
 
     def to_ref(self):
-        if self.id is None:
-            raise DocumentWasNotSaved("Can not create dbref without id")
-        return DBRef(self.get_motor_collection().name, self.id)
+        if self.object_id is None:
+            raise DocumentWasNotSaved("Can not create dbref without object_id")
+        return DBRef(self.get_motor_collection().name, self.object_id)
 
     async def fetch_link(self, field: Union[str, Any]):
         ref_obj = getattr(self, field, None)
@@ -1258,7 +1258,7 @@ class Document(BaseModel, UpdateMethods):
             ObjectId: lambda v: str(v),
         }
         allow_population_by_field_name = True
-        fields = {"id": "_id"}
+        fields = {"object_id": "_id"}
 
         @staticmethod
         def schema_extra(

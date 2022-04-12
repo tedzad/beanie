@@ -47,7 +47,7 @@ async def test_delete_all(documents):
 
 
 async def test_delete(document):
-    doc_id = document.id
+    doc_id = document.object_id
     await document.delete()
     new_document = await DocumentTestModel.get(doc_id)
     assert new_document is None

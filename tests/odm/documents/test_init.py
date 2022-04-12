@@ -202,9 +202,9 @@ async def test_document_string_import(db):
         ],
     )
     document = DocumentTestModelStringImport(test_int=1)
-    assert document.id is None
+    assert document.object_id is None
     await document.insert()
-    assert document.id is not None
+    assert document.object_id is not None
 
     with pytest.raises(ValueError):
         await init_beanie(
